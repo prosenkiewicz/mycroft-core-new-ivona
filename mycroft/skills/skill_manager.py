@@ -23,6 +23,7 @@ from mycroft.configuration import Configuration
 from mycroft.messagebus.message import Message
 from mycroft.util.log import LOG
 from .msm_wrapper import create_msm as msm_creator, build_msm_config
+from .settings import SkillSettingsDownloader
 from .skill_loader import SkillLoader
 from .skill_updater import SkillUpdater
 
@@ -46,6 +47,7 @@ class SkillManager(Thread):
         self.enclosure = EnclosureAPI(bus)
         self.initial_load_complete = False
         self.num_install_retries = 0
+        self.settings_downloader = SkillSettingsDownloader(self.bus)
         self._define_message_bus_events()
         self.skill_updater = SkillUpdater()
         self.daemon = True
@@ -68,6 +70,10 @@ class SkillManager(Thread):
         self.bus.on('skillmanager.keep', self.deactivate_except)
         self.bus.on('skillmanager.activate', self.activate_skill)
         self.bus.on('mycroft.paired', self.handle_paired)
+        self.bus.on(
+            'mycroft.skills.settings.update',
+            self.settings_downloader.download
+        )
 
     @property
     def config(self):
@@ -124,6 +130,7 @@ class SkillManager(Thread):
         self._remove_git_locks()
         self._connected_event.wait()
         self._load_on_startup()
+        self.settings_downloader.download()
 
         # Scan the file folder that contains Skills.  If a Skill is updated,
         # unload the existing version from memory and reload from the disk.
@@ -161,8 +168,8 @@ class SkillManager(Thread):
                 self._load_skill(skill_dir)
 
     def _load_skill(self, skill_directory):
+        skill_loader = SkillLoader(self.bus, skill_directory)
         try:
-            skill_loader = SkillLoader(self.bus, skill_directory)
             skill_loader.load()
         except Exception:
             LOG.exception('Load of skill {} failed!'.format(skill_directory))
@@ -260,6 +267,7 @@ class SkillManager(Thread):
     def stop(self):
         """Tell the manager to shutdown."""
         self._stop_event.set()
+        self.settings_downloader.stop_downloading()
 
         # Do a clean shutdown of all skills
         for skill_loader in self.skill_loaders.values():
