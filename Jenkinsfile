@@ -16,8 +16,10 @@ pipeline {
                 }
             }
             steps {
-                echo 'Launching package build'
-                build (job: '../Mycroft-snap/ci', wait: false)
+                echo "Launching package build for ${env.BRANCH_NAME}"
+                build (job: '../Mycroft-snap/ci', wait: false,
+                       parameters: [[$class: 'StringParameterValue',
+                                     name: 'BRANCH', value: env.BRANCH_NAME]])
             }
         }
         stage('Run Integration Tests') {
