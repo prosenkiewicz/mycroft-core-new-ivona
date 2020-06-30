@@ -89,6 +89,7 @@ def before_all(context):
             raise Exception('Timeout waiting for skills to become ready.')
         else:
             sleep(1)
+    sleep(10)
 
     context.bus = bus
     context.matched_message = None
