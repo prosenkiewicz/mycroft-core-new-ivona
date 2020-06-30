@@ -65,9 +65,11 @@ class EnclosureMark2(Enclosure):
 
     def on_display_bus_start(self, _):
         """Start the display message bus."""
+        LOG.info('connecting to display bus')
         websocket_config = self.global_config.get("gui_websocket")
         start_display_message_bus(websocket_config)
         self._connect_to_display_bus(websocket_config)
+        LOG.info('connection to display bus successful')
         self.internet.check_connection()
 
     def _connect_to_display_bus(self, websocket_config):
@@ -119,8 +121,8 @@ class EnclosureMark2(Enclosure):
         if not ignore:
             if self.active_screen == self.active_until_stopped:
                 pause_active = (
-                        self.active_screen is not None
-                        and screen_name != self.active_screen
+                        self.active_screen is not None and
+                        screen_name != self.active_screen
                 )
                 if pause_active:
                     LOG.info('Pausing "{}" screen'.format(self.active_screen))
