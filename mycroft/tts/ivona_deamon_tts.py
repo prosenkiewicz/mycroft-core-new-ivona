@@ -21,14 +21,14 @@
 #         "deamon_port": 9123,
 #       }
 #   }
-
+# TODO should i start ivona deamon here?
 import socket
 import wave
 import sys
 import subprocess
 
-from mycroft.tts import TTS, TTSValidator
-from mycroft.util import LOG
+from .tts import TTS, TTSValidator
+from mycroft.util.log import LOG
 from mycroft.configuration import Configuration
 
 
@@ -43,9 +43,9 @@ class IvonaTTSDeamon(TTS):
         s = self.socketConnection
         s.sendall(sentence.encode('utf-8'))
         s.sendall(b'\x00')
-        sampleRate = 8000.0 # hertz
+        sampleRate = 8000.0  # hertz
         wavObj = wave.open(wav_file, "w")
-        wavObj.setnchannels(1) # mono
+        wavObj.setnchannels(1)  # mono
         wavObj.setsampwidth(2)
         wavObj.setframerate(sampleRate)
         while 1:
@@ -58,11 +58,11 @@ class IvonaTTSDeamon(TTS):
         return (wav_file, None)  # No phonemes
 
     def connectToSocket(self):
-        try: 
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             LOG.warning("Socket successfully created")
-        except socket.error as err: 
-            LOG.warning("socket creation failed with error %s" %(err) )
+        except socket.error as err:
+            LOG.warning("socket creation failed with error %s" % (err))
 
         config = Configuration.get().get("tts").get("ivonaDeamon")
         HOST = config.get("deamon_host", "")

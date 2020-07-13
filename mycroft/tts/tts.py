@@ -478,6 +478,8 @@ class TTSFactory:
     from mycroft.tts.yandex_tts import YandexTTS
     from mycroft.tts.dummy_tts import DummyTTS
     from mycroft.tts.polly_tts import PollyTTS
+    from mycroft.tts.ivona_deamon_tts import IvonaTTSDeamon
+    from mycroft.tts.ivona_comand_tts import IvonaTTSComand
 
     CLASSES = {
         "mimic": Mimic,
@@ -492,7 +494,9 @@ class TTSFactory:
         "responsive_voice": ResponsiveVoice,
         "yandex": YandexTTS,
         "polly": PollyTTS,
-        "dummy": DummyTTS
+        "dummy": DummyTTS,
+        "ivonaDeamon": IvonaTTSDeamon,
+        "ivonaComand": IvonaTTSComand
     }
 
     @staticmethod

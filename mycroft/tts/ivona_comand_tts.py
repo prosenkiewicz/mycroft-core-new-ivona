@@ -17,15 +17,23 @@
 # "tts": {
 #   "module": "ivonaComand",
 #   "ivonaComand": {
-#     "path": "/opt/IVONA/ivona-telecom-pc_linux-8khz-1.6.38.186-pl_maja/bin/ivonacl"
+#     "path": "~/projects/mycroft/ivona/IVONA/ivona-telecom-pc_linux-8khz-1.6.38.186-pl_maja/bin/ivonacl",
+#      "params": {
+#           "-l": "~/projects/mycroft/ivona/IVONA/ivona-telecom-pc_linux-8khz-1.6.38.186-pl_maja/lib/ivona/voices/64/libvoice_pl_maja.so.1.6",
+#           "-x": "~/projects/mycroft/ivona/IVONA/ivona-telecom-pc_linux-8khz-1.6.38.186-pl_maja/lib/ivona/voices/vox_pl_maja8v",
+#           "-c": "~/projects/mycroft/ivona/IVONA//Certificate_of_authenticity_Cityparking.ca",
+#           "--encoding": "utf-8",
+#           "--dur": 75,
+#           "--vol": 95,
+#       }
 #   }
 # }
 
 import subprocess
-import wave
 
-from mycroft.tts import TTS, TTSValidator
+from mycroft.tts.tts import TTS, TTSValidator
 from mycroft.configuration import Configuration
+from mycroft.util import LOG
 
 
 class IvonaTTSComand(TTS):
@@ -35,9 +43,23 @@ class IvonaTTSComand(TTS):
     def get_tts(self, sentence, wav_file):
         config = Configuration.get().get("tts").get("ivonaComand")
         BIN = config.get("path", "")
+        configParams = config.get("params", {})
+        configParamsList = list(configParams.keys())
+        arrayOfParams = [BIN, "-t", sentence]
+        stringOfParams = BIN + ' -t "' + sentence + '" '
+        for key in configParamsList:
+            arrayOfParams.append(key)
+            value = configParams[key]
+            stringOfParams += str(key) + " " + str(value) + ' '
+            arrayOfParams.append(str(value))
 
-        subprocess.run(
-            [BIN, "-t", sentence, wav_file])
+        # subprocesParams = [BIN, "-t", sentence] + arrayOfParams
+        arrayOfParams.append(wav_file)
+        stringOfParams += wav_file
+        print(stringOfParams)
+
+        subprocess.call(arrayOfParams)
+        # subprocess.run([BIN, "-t", sentence, wav_file])
         return (wav_file, None)  # No phonemes
 
 
@@ -53,7 +75,6 @@ class IvonaTTSComandValidator(TTSValidator):
         try:
             config = Configuration.get().get("tts").get("ivonaComand")
             BIN = config.get("path", "")
-
             subprocess.call([BIN, '--help'])
         except Exception:
             raise Exception(
